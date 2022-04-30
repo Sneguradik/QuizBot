@@ -19,7 +19,7 @@ async def task():
     question = random.choice(db.get_inf('Questions', 'Used', False))
     global score
     score = question[6]
-    #await db.set_used(question[0])
+    await db.set_used(question[0])
     for user in users:
         if question[-2]!=0:
             await bot.send_photo(user[0], question[-2], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
