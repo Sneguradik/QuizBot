@@ -15,6 +15,9 @@ class QuestionsFSM(StatesGroup):
     Score = State()
     file_id = State()
 
+class DelQuestionFSM(StatesGroup):
+    id = State()
+
 async def AllQuestions(message: types.Message):
     if db.get_inf('Users', 'telegram_id', message.from_user.id)[0][-1] == 'admin':
         questions = db.get_inf('Questions')
@@ -85,6 +88,16 @@ async def reg_photo(message: types.Message, state:FSMContext):
     await db.add_Question(state)
     await state.finish()
     await message.answer('Спасибо!', reply_markup=kbca.kb)
+
+async def del_question(message: types.Message, state:FSMContext):
+    if db.get_inf('Users', 'telegram_id', message.from_user.id)[0][-1] == 'admin':
+        await DelQuestionFSM.id.set()
+        await message.answer('Введите id вопроса', reply_markup=ReplyKeyboardRemove())
+
+async def del_question_id(message: types.Message, state:FSMContext):
+    await db.delete_question(int(message.text))
+    await state.finish()
+    await message.answer('Спасибо!' , reply_markup=kbca.kb)
  
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler( AllQuestions, commands=['AllQuestions'])
@@ -96,3 +109,5 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(reg_Answer3 , state=QuestionsFSM.Answer3)
     dp.register_message_handler(reg_Score, state=QuestionsFSM.Score)
     dp.register_message_handler( reg_photo , state=QuestionsFSM.file_id, content_types=['photo','text'] )
+    dp.register_message_handler( del_question, state=None , commands=['DelQuestion'] )
+    dp.register_message_handler( del_question_id, state=DelQuestionFSM.id)

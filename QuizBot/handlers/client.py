@@ -12,6 +12,7 @@ class RegisterFSM(StatesGroup):
     telegram_id = State()
     Name = State()
     Surname =State()
+    Email = State()
 
 async def task():
     try: 
@@ -73,6 +74,12 @@ async def reg_name(message: types.Message, state:FSMContext):
 async def reg_surname(message: types.Message, state:FSMContext):
     async with state.proxy() as data:
         data['Surname'] = message.text
+    await RegisterFSM.next()
+    await message.answer('Введи почту')
+
+async def reg_email(message: types.Message, state:FSMContext):
+    async with state.proxy() as data:
+        data['Email'] = message.text
     await db.add_User(state)
     await state.finish()
     await message.answer('Спасибо!', reply_markup=kbc.kb)
@@ -81,15 +88,13 @@ async def my_score(message: types.Message):
     user = db.get_inf('Users', 'telegram_id', message.from_user.id)[0]
     await message.answer(f'{message.from_user.first_name} твой счёт {user[3]}.\nСтремись к лучшему!')
     
-async def reply(message: types.Message):
-    await task()
 
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(start, commands=['start'])
-    dp.register_message_handler(task, commands=['reply'])
     dp.register_message_handler(my_score, commands=['my_score'])
     dp.register_message_handler(register, commands=['register'] ,state=None)
     dp.register_message_handler(reg_name, state=RegisterFSM.Name)
     dp.register_message_handler(reg_surname, state=RegisterFSM.Surname)
+    dp.register_message_handler(reg_email, state=RegisterFSM.Email)
     dp.register_callback_query_handler(Right_callback,text = 'Right')
     dp.register_callback_query_handler(Wrong_callback,text = 'Nope')
