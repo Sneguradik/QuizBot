@@ -12,7 +12,7 @@ async def add_User(state):
     async with state.proxy() as data:
         dt = list(data.values())
         tuple(dt)
-        cur.execute(f'INSERT INTO Users (telegram_id, Name, Surname) VALUES(?,?,?)',dt)
+        cur.execute(f'INSERT INTO Users (telegram_id, Name, Surname, Email) VALUES(?,?,?,?)',dt)
         db.commit()
 
 def get_inf(table_name, param_name=None, param=None):
@@ -36,4 +36,8 @@ async def update_score(user_id, score):
 
 async def set_used(id):
     cur.execute(f'UPDATE Questions SET Used = ? WHERE id = ?', (True, id))
+    db.commit()
+
+async def delete_question(id):
+    cur.execute('DELETE FROM Questions WHERE id = ?', (id))
     db.commit()
