@@ -7,7 +7,7 @@ import datetime
 
 delay = 20
 timestart = 1300
-timeend = 2200
+timeend = 2359
 
 async def on_startup(_):
     print('Bot online')

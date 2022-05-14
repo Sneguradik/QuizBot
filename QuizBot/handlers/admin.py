@@ -98,6 +98,10 @@ async def del_question_id(message: types.Message, state:FSMContext):
     await db.delete_question(int(message.text))
     await state.finish()
     await message.answer('Спасибо!' , reply_markup=kbca.kb)
+
+async def renew_questions(message: types.Message):
+    await db.renew_questions_db()
+    await message.answer('Спасибо!' , reply_markup=kbca.kb)
  
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler( AllQuestions, commands=['AllQuestions'])
@@ -111,3 +115,4 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler( reg_photo , state=QuestionsFSM.file_id, content_types=['photo','text'] )
     dp.register_message_handler( del_question, state=None , commands=['DelQuestion'] )
     dp.register_message_handler( del_question_id, state=DelQuestionFSM.id)
+    dp.register_message_handler( renew_questions, commands=['RenewQuestions'])

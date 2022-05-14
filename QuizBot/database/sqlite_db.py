@@ -39,5 +39,9 @@ async def set_used(id):
     db.commit()
 
 async def delete_question(id):
-    cur.execute('DELETE FROM Questions WHERE id = ?', (id))
+    cur.execute('DELETE FROM Questions WHERE id = ?', (id,))
+    db.commit()
+
+async def renew_questions_db():
+    cur.execute(f'UPDATE Questions SET Used = ?', (False, ))
     db.commit()
