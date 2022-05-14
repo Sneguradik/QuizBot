@@ -25,7 +25,6 @@ async def task():
         await db.set_used(question[0])
         if msg_id:
             for user, message in msg_id.items():
-                print(user, message)
                 await bot.edit_message_reply_markup(user,message,reply_markup=None)
         for user in users:
             if question[-2]!=0:
@@ -33,7 +32,6 @@ async def task():
             else:
                 msg = await bot.send_message(user[0], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
             msg_id[user[0]]=msg.message_id
-            
     except:
         pass
 
