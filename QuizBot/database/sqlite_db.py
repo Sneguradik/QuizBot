@@ -45,3 +45,11 @@ async def delete_question(id):
 async def renew_questions_db():
     cur.execute(f'UPDATE Questions SET Used = ?', (False, ))
     db.commit()
+
+def get_scores():
+    res=cur.execute(f'SELECT * FROM Users ORDER BY Score DESC').fetchall()
+    return res
+
+async def clean_scores_db():
+    cur.execute(f'UPDATE Users SET Score = ?', (0, ))
+    db.commit()

@@ -2,12 +2,20 @@ from aiogram import Dispatcher, types
 from create import dp, bot
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-import database.sqlite_db as db 
+import database.sqlite_db as db
+from handlers import admin 
 from keyboards.client import *
 from keyboards.admin import *
 import random
+import datetime
 
 msg_id = {}
+timestart = 1905
+timeend = 2359
+
+def checktime():
+    now=int(datetime.datetime.now().hour*100 + datetime.datetime.now().minute)
+    return (now>=timestart) and (now<=timeend)
 
 class RegisterFSM(StatesGroup):
     telegram_id = State()
@@ -16,29 +24,38 @@ class RegisterFSM(StatesGroup):
     Email = State()
 
 async def task():
-    try: 
-        kb = None
-        users = db.get_inf('Users')
-        question = random.choice(db.get_inf('Questions', 'Used', False))
-        global score
-        score = question[6]
-        await db.set_used(question[0])
-        if msg_id:
-            for user, message in msg_id.items():
-                await bot.edit_message_reply_markup(user,message,reply_markup=None)
-        for user in users:
-            if question[-2]!=0:
-                msg = await bot.send_photo(user[0], question[-2], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
-            else:
-                msg = await bot.send_message(user[0], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
-            msg_id[user[0]]=msg.message_id
-    except:
+    if checktime():
+        try:
+            kb = None
+            users = db.get_inf('Users')
+            lf = db.get_inf('Questions', 'Used', False)
+            question = random.choice(lf)
+            global score
+            global msg_id
+            score = question[6]
+            await db.set_used(question[0])
+            if msg_id:
+                a= msg_id
+                for user, message in a.items():
+                    await bot.edit_message_reply_markup(user,message,reply_markup=None)
+                msg_id={}
+            for user in users:
+                
+                if question[-2]!=0:
+                    msg = await bot.send_photo(user[0], question[-2], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
+                else:
+                    msg = await bot.send_message(user[0], question[1], reply_markup=inlinekeyboard((question[2], 'Right'),(question[3], 'Nope'),(question[4], 'Nope'),(question[5], 'Nope')))
+                msg_id[user[0]]=msg.message_id
+        except:
+            pass
+    else:
         pass
 
 async def Right_callback(callback: types.CallbackQuery):
     user_id = callback.from_user.id
-    print(user_id)
     scoreplus = db.get_inf('Users', 'telegram_id', user_id)[0][3] + score
+    if callback.message.message_id in msg_id.values():
+        msg_id.pop(callback.from_user.id)
     await db.update_score(user_id, scoreplus)
     await callback.message.answer(f'Молодец! Это правильный ответ, ты получаешь {score} баллов.')
     await bot.edit_message_reply_markup(user_id, callback.message.message_id, reply_markup=None)
@@ -46,6 +63,8 @@ async def Right_callback(callback: types.CallbackQuery):
 
 async def Wrong_callback(callback: types.CallbackQuery):
     user_id = callback.from_user.id
+    if callback.message.message_id in msg_id.values():
+        msg_id.pop(callback.from_user.id)
     await callback.message.answer('Это неправильный ответ.')
     await bot.edit_message_reply_markup(user_id, callback.message.message_id, reply_markup=None)
     await callback.answer()
@@ -64,7 +83,7 @@ async def start(message: types.Message):
     await message.answer(reply, reply_markup=kb)
 
 async def register(message: types.Message, state:FSMContext):
-    RegisterFSM.telegram_id.set()
+    await RegisterFSM.telegram_id.set()
     async with state.proxy() as data:
         data['telegram_id'] = message.from_user.id
     await RegisterFSM.Name.set() 

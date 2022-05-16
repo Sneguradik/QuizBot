@@ -102,6 +102,20 @@ async def del_question_id(message: types.Message, state:FSMContext):
 async def renew_questions(message: types.Message):
     await db.renew_questions_db()
     await message.answer('Спасибо!' , reply_markup=kbca.kb)
+
+async def Scores(message: types.Message):
+    if db.get_inf('Users', 'telegram_id', message.from_user.id)[0][-1] == 'admin':
+        res=db.get_scores()
+        reply = ''
+        for i in range(len(res)):
+            user = await bot.get_chat(res[i][0])
+            reply=reply+f"{i+1} место: @{user.username}, {res[i][3]}\n"
+        await message.answer(reply , reply_markup=kbca.kb)
+
+async def clean_scores(message: types.Message):
+    if db.get_inf('Users', 'telegram_id', message.from_user.id)[0][-1] == 'admin':
+        await db.clean_scores_db()
+        await message.answer('Спасибо!' , reply_markup=kbca.kb)
  
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler( AllQuestions, commands=['AllQuestions'])
@@ -116,3 +130,5 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler( del_question, state=None , commands=['DelQuestion'] )
     dp.register_message_handler( del_question_id, state=DelQuestionFSM.id)
     dp.register_message_handler( renew_questions, commands=['RenewQuestions'])
+    dp.register_message_handler(Scores, commands=['Scores'])
+    dp.register_message_handler(clean_scores, commands=['CleanScores'])

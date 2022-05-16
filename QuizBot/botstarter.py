@@ -6,22 +6,15 @@ import asyncio
 import datetime
 
 delay = 20
-timestart = 1300
-timeend = 2359
 
 async def on_startup(_):
     print('Bot online')
     sqlite_db.on_start()
 
-def checktime():
-    now=int(datetime.datetime.now().hour*100 + datetime.datetime.now().minute)
-    return (now>=timestart) and (now<=timeend)
 
 def repeat(coro, loop):
-    if checktime():
-        asyncio.ensure_future(coro(), loop=loop)
-        loop.call_later(delay, repeat, coro, loop)
-
+    asyncio.ensure_future(coro(), loop=loop)
+    loop.call_later(delay, repeat, coro, loop)
 
 
 client.register_handlers_client(dp)
