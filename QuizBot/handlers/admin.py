@@ -109,7 +109,7 @@ async def Scores(message: types.Message):
         reply = ''
         for i in range(len(res)):
             user = await bot.get_chat(res[i][0])
-            reply=reply+f"{i+1} место: @{user.username}, {res[i][3]}\n"
+            reply=reply+f"{i+1} место: @{user.username}, {res[i][1]} {res[i][2]}, {res[i][3]} баллов, почта: {res[i][4]}\n"
         await message.answer(reply , reply_markup=kbca.kb)
 
 async def clean_scores(message: types.Message):
